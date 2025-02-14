@@ -2,29 +2,52 @@ import { useState, useEffect } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import DeleteIcon from '@mui/icons-material/Delete'
+import InventoryIcon from '@mui/icons-material/Inventory'
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn'
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag'
 
 const SellerDashboard = () => {
   const [products, setProducts] = useState([])
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    totalSales: 0,
+    activeOrders: 0
+  })
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchProducts()
-  }, [])
-
-  const fetchProducts = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch('/api/products/seller', {
+      const productsRes = await fetch('/api/products/seller', {
         credentials: 'include'
       })
-      const data = await res.json()
-      setProducts(data.products || [])
+      const productsData = await productsRes.json()
+
+      const statsRes = await fetch('/api/orders/seller-stats', {
+        credentials: 'include'
+      })
+      const statsData = await statsRes.json()
+
+      if (!productsRes.ok || !statsRes.ok) {
+        throw new Error('Failed to fetch data')
+      }
+
+      setProducts(productsData.products)
+      setStats({
+        totalProducts: productsData.products.length,
+        totalSales: statsData.totalSales,
+        activeOrders: statsData.activeOrders
+      })
     } catch (error) {
-      console.error('Error fetching products:', error)
-      toast.error('Failed to load products')
+      console.error('Error fetching data:', error)
+      toast.error('Failed to load dashboard data')
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
 
   const handleDelete = async (productId) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return
@@ -38,7 +61,7 @@ const SellerDashboard = () => {
       if (!res.ok) throw new Error('Failed to delete product')
       
       toast.success('Product deleted successfully')
-      fetchProducts()
+      fetchData();
     } catch (error) {
       console.error('Delete error:', error)
       toast.error('Failed to delete product')
@@ -60,19 +83,42 @@ const SellerDashboard = () => {
         <p className="text-indigo-100">Manage your products and track your sales</p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Total Products</h3>
-          <p className="text-3xl font-bold text-indigo-600">{products.length}</p>
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-100 rounded-full">
+              <InventoryIcon className="text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-gray-600">Total Products</p>
+              <h3 className="text-2xl font-bold">{stats.totalProducts}</h3>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Total Sales</h3>
-          <p className="text-3xl font-bold text-green-600">₹2,405</p>
+
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-green-100 rounded-full">
+              <MonetizationOnIcon className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-gray-600">Total Sales</p>
+              <h3 className="text-2xl font-bold">₹{stats.totalSales.toLocaleString()}</h3>
+            </div>
+          </div>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-gray-500 text-sm font-medium">Active Orders</h3>
-          <p className="text-3xl font-bold text-orange-600">8</p>
+
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-orange-100 rounded-full">
+              <ShoppingBagIcon className="text-orange-600" />
+            </div>
+            <div>
+              <p className="text-gray-600">Active Orders</p>
+              <h3 className="text-2xl font-bold">{stats.activeOrders}</h3>
+            </div>
+          </div>
         </div>
       </div>
 

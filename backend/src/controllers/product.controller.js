@@ -51,13 +51,14 @@ export const createProduct = async (req, res) => {
 // Get all products (for customers)
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find({ quantity: { $gt: 0 } }).populate(
-      "seller",
-      "fullName email"
-    );
-    res.status(200).json(products);
+    // Remove any quantity filter to get all products
+    const products = await Product.find()
+      .populate("seller", "fullName email")
+      .sort({ createdAt: -1 });
+
+    res.json(products);
   } catch (error) {
-    console.error("Error in getProducts:", error);
+    console.error("Get products error:", error);
     res.status(500).json({ message: "Error fetching products" });
   }
 };
@@ -69,7 +70,11 @@ export const getSellerProducts = async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const products = await Product.find({ seller: req.user._id });
+    // Remove any quantity filter to get all seller's products
+    const products = await Product.find({ seller: req.user._id }).sort({
+      createdAt: -1,
+    });
+
     res.status(200).json({ products });
   } catch (error) {
     console.error("Error in getSellerProducts:", error);

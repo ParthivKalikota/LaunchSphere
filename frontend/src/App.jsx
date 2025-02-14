@@ -20,6 +20,8 @@ import SellerRoute from './components/SellerRoute'
 import EditProduct from './pages/EditProduct'
 import Navigation from './components/Navigation'
 import Cart from './pages/Cart'
+import Orders from './pages/Orders'
+import Sales from './pages/Sales'
 
 function App() {
   return (
@@ -56,10 +58,12 @@ function App() {
                       <Route path="/dashboard" element={<SellerDashboard />} />
                       <Route path="/add-product" element={<AddProduct />} />
                       <Route path="/edit-product/:id" element={<EditProduct />} />
+                      <Route path="/sales" element={<Sales />} />
                     </Route>
 
                     {/* Customer Routes */}
                     <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+                    <Route path="/orders" element={<Orders />} />
                   </Route>
 
                   <Route path="*" element={<NotFound />} />

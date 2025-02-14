@@ -1,13 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/authContext'
+import { useCart } from '../hooks/use-cart'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import PersonIcon from '@mui/icons-material/Person'
 import AddCircleIcon from '@mui/icons-material/AddCircle'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import LogoutIcon from '@mui/icons-material/Logout'
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn'
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 
 const Navigation = () => {
   const { user, logout } = useAuth()
+  const { cartItems } = useCart()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
@@ -17,6 +21,10 @@ const Navigation = () => {
     } catch (error) {
       console.error('Logout failed:', error)
     }
+  }
+
+  const handleCartClick = () => {
+    navigate('/cart')
   }
 
   return (
@@ -42,6 +50,29 @@ const Navigation = () => {
                   <span className="hidden md:inline">Dashboard</span>
                 </Link>
                 
+                {!user.isSeller && (
+                  <>
+                    <Link
+                      to="/orders"
+                      className="flex items-center px-4 py-2 text-gray-600 hover:text-indigo-600 transition-colors"
+                    >
+                      <ReceiptLongIcon className="mr-1" />
+                      <span className="hidden md:inline">Orders</span>
+                    </Link>
+                    <button
+                      onClick={handleCartClick}
+                      className="flex items-center px-4 py-2 text-gray-600 hover:text-indigo-600 transition-colors relative"
+                    >
+                      <ShoppingCartIcon />
+                      {cartItems.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                          {cartItems.length}
+                        </span>
+                      )}
+                    </button>
+                  </>
+                )}
+                
                 {user.isSeller && (
                   <Link
                     to="/add-product"
@@ -49,6 +80,16 @@ const Navigation = () => {
                   >
                     <AddCircleIcon className="mr-1" />
                     <span className="hidden md:inline">Add Product</span>
+                  </Link>
+                )}
+                
+                {user.isSeller && (
+                  <Link
+                    to="/sales"
+                    className="flex items-center px-4 py-2 text-gray-600 hover:text-indigo-600 transition-colors"
+                  >
+                    <MonetizationOnIcon className="mr-1" />
+                    <span className="hidden md:inline">Sales</span>
                   </Link>
                 )}
                 

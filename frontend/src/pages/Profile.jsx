@@ -1,16 +1,26 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/authContext'
 import toast from 'react-hot-toast'
 import PersonIcon from '@mui/icons-material/Person'
 import EmailIcon from '@mui/icons-material/Email'
 import StorefrontIcon from '@mui/icons-material/Storefront'
+import EditIcon from '@mui/icons-material/Edit'
+import SaveIcon from '@mui/icons-material/Save'
+import CancelIcon from '@mui/icons-material/Cancel'
 
 const Profile = () => {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, setUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const formRef = useRef(null)
+  const [formData, setFormData] = useState({
+    fullName: user?.fullName || '',
+    email: user?.email || '',
+    phone: user?.phone || ''
+  })
 
   const fetchProfile = useCallback(async () => {
     console.log('Current user:', user)
@@ -62,6 +72,50 @@ const Profile = () => {
   useEffect(() => {
     fetchProfile()
   }, [fetchProfile])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      const res = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone || ''
+        })
+      })
+
+      const text = await res.text()
+      const data = text ? JSON.parse(text) : {}
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Error updating profile')
+      }
+
+      setUser({
+        ...user,
+        ...data
+      })
+      setIsEditing(false)
+      toast.success('Profile updated successfully')
+    } catch (error) {
+      console.error('Update profile error:', error)
+      toast.error(error.message || 'Failed to update profile')
+    }
+  }
+
+  const handleCancel = () => {
+    setFormData({
+      fullName: user?.fullName || '',
+      email: user?.email || '',
+      phone: user?.phone || ''
+    })
+    setIsEditing(false)
+  }
 
   if (loading) {
     return (
@@ -142,15 +196,102 @@ const Profile = () => {
 
           {/* Actions */}
           <div className="px-8 sm:px-10 py-6 bg-gray-50 border-t border-gray-200">
-            <button
-              onClick={() => navigate('/edit-profile')}
-              className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Edit Profile
-            </button>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                <EditIcon /> Edit Profile
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {isEditing && (
+        <div className="max-w-2xl mx-auto mt-6">
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Edit Profile</h2>
+            </div>
+
+            <form ref={formRef} onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  ) : (
+                    <p className="text-gray-900">{user?.fullName}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  ) : (
+                    <p className="text-gray-900">{user?.email}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  ) : (
+                    <p className="text-gray-900">{user?.phone || 'Not provided'}</p>
+                  )}
+                </div>
+
+                {isEditing && (
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      type="submit"
+                      className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                      <SaveIcon /> Save Changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                      <CancelIcon /> Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { connectDB } from "./lib/db.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import orderRoutes from "./routes/order.route.js";
 dotenv.config();
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { useCart } from '../hooks/use-cart'
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import {
   Container,
   Box,
@@ -12,7 +16,6 @@ import {
   Chip,
   Divider
 } from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import LocalOfferIcon from '@mui/icons-material/LocalOffer'
 import InventoryIcon from '@mui/icons-material/Inventory'
 import PersonIcon from '@mui/icons-material/Person'
@@ -22,6 +25,7 @@ const ProductDetails = () => {
   const navigate = useNavigate()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
+  const { cartItems, addToCart } = useCart()
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -45,6 +49,14 @@ const ProductDetails = () => {
 
     fetchProduct()
   }, [id, navigate])
+
+  const handleButtonClick = () => {
+    if (cartItems.some(item => item._id === product._id)) {
+      navigate('/cart')
+    } else {
+      addToCart(product)
+    }
+  }
 
   if (loading) {
     return (
@@ -116,7 +128,7 @@ const ProductDetails = () => {
               <Box sx={{ my: 3 }}>
                 <Chip
                   icon={<LocalOfferIcon />}
-                  label={`$${product.price}`}
+                  label={`₹${product.price.toLocaleString()}`}
                   color="primary"
                   sx={{ mr: 1, fontSize: '1.2rem' }}
                 />
@@ -150,14 +162,31 @@ const ProductDetails = () => {
                 />
               </Box>
 
-              <Button
-                variant="contained"
-                size="large"
-                fullWidth
+              <button
+                onClick={handleButtonClick}
                 disabled={product.quantity === 0}
+                className={`w-full py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
+                  product.quantity === 0 
+                    ? 'bg-gray-300 cursor-not-allowed' 
+                    : cartItems.some(item => item._id === product._id)
+                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                }`}
               >
-                {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-              </Button>
+                {product.quantity === 0 ? (
+                  'Out of Stock'
+                ) : cartItems.some(item => item._id === product._id) ? (
+                  <>
+                    <ShoppingCartIcon />
+                    Go to Cart
+                  </>
+                ) : (
+                  <>
+                    <AddShoppingCartIcon />
+                    Add to Cart
+                  </>
+                )}
+              </button>
             </Box>
           </Grid>
         </Grid>

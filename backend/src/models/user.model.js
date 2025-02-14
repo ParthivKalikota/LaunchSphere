@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
@@ -16,10 +16,18 @@ const userSchema = new mongoose.Schema(
       required: true,
       minLength: 6,
     },
-    isSeller : {
-        type: Boolean,
-        required: true,
-    }
+    isSeller: {
+      type: Boolean,
+      required: true,
+    },
+    totalSales: {
+      type: Number,
+      default: 0,
+    },
+    totalOrders: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

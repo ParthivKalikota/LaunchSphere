@@ -14,7 +14,6 @@ import {
 } from '@mui/material'
 import AddBusinessIcon from '@mui/icons-material/AddBusiness'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import InventoryIcon from '@mui/icons-material/Inventory'
 import ImageIcon from '@mui/icons-material/Image'
 
@@ -109,7 +108,7 @@ const AddProduct = () => {
                 required
                 fullWidth
                 type="number"
-                label="Price"
+                label="Price (₹)"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
@@ -117,7 +116,7 @@ const AddProduct = () => {
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <AttachMoneyIcon />
+                      ₹
                     </InputAdornment>
                   ),
                 }}

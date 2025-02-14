@@ -89,6 +89,11 @@ const Home = () => {
                       alt={product.name}
                       className="w-full h-56 object-cover transform hover:scale-110 transition-transform duration-500"
                     />
+                    {product.quantity === 0 && (
+                      <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 m-2 rounded-full">
+                        Out of Stock
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="p-6">
@@ -98,7 +103,7 @@ const Home = () => {
                   </p>
                   <div className="flex justify-between items-center mt-auto">
                     <div>
-                      <p className="text-2xl font-bold text-indigo-600">${product.price}</p>
+                      <p className="text-2xl font-bold text-indigo-600">₹{product.price}</p>
                       <p className="text-sm text-gray-500">
                         {product.quantity > 0 ? (
                           <span className="text-emerald-600">{product.quantity} in stock</span>
